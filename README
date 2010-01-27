@@ -1,18 +1,13 @@
 mojolicious-plugin-linkedcontent version 0.0.1
 
-[ REPLACE THIS...
+THis Mojolicious plugin provides four helpers: 
 
-  The README is used to introduce the module and provide instructions on
-  how to install the module, any machine dependencies it may have (for
-  example C compilers and installed libraries) and any other information
-  that should be understood before the module is installed.
+        require_js
+        require_css
+        include_js
+        include_css
 
-  A README file is required for CPAN modules since CPAN extracts the
-  README file from a module distribution so that people browsing the
-  archive can use it get an idea of the modules uses. It is usually a
-  good idea to provide version information here so that people can
-  decide whether fixes for the module are worth downloading.
-]
+Which allows you to manage poading external stuff to page by demand.
 
 
 INSTALLATION
@@ -23,19 +18,6 @@ To install this module, run the following commands:
 	make
 	make test
 	make install
-
-Alternatively, to install with Module::Build, you can use the following commands:
-
-	perl Build.PL
-	./Build
-	./Build test
-	./Build install
-
-
-DEPENDENCIES
-
-None.
-
 
 COPYRIGHT AND LICENCE
 
