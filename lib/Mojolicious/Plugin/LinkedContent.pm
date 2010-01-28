@@ -14,6 +14,7 @@ my %defaults = (
     'css_base' => '/css',
 );
 
+my $stashkey = 'linked_store';
 sub register {
     my ( $self, $app, $params) = @_;
     for (qw/js_base css_base/) {
@@ -39,18 +40,22 @@ sub register {
 
 sub store_items {
     my ($self, $target, $c, @items) = @_;
-    $self->{$target}{$_} =1 for @items;
+
+    my $upd;
+    my $store = $c->stash($stashkey) || {}; 
+    $store->{$target}{$_} = 1 for @items;
+    $c->stash($stashkey => $store);
 }
 
 sub include_js {
     my $self = shift;
     my $c = shift;
     $self->store_items('js', @_) if @_;
-    return '' unless $self->{'js'};
-
+    my $store = $c->stash($stashkey);
+    return '' unless $store->{'js'};
     my @ct;
-    for (keys %{$self->{'js'}}) {
-        $c->stash('linked_item' => $self->{'js_base'} . '/' . $_);
+    for (keys %{$store->{'js'}}) {
+        $c->stash('linked_item' => $store->{'js_base'} . '/' . $_);
 
         push @ct,
           $c->render_partial(
