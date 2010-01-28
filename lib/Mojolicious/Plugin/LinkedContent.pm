@@ -55,7 +55,7 @@ sub include_js {
     return '' unless $store->{'js'};
     my @ct;
     for (keys %{$store->{'js'}}) {
-        $c->stash('linked_item' => $store->{'js_base'} . '/' . $_);
+        $c->stash('linked_item' => $self->{'js_base'} . '/' . $_);
 
         push @ct,
           $c->render_partial(
