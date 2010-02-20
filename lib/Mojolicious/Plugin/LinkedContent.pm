@@ -14,7 +14,7 @@ my %defaults = (
     'css_base' => '/css',
 );
 
-my $stashkey = 'linked_store';
+my $stashkey = '$linked_store';
 sub register {
     my ( $self, $app, $params) = @_;
     for (qw/js_base css_base/) {
@@ -22,18 +22,26 @@ sub register {
           defined($params->{$_}) ? delete($params->{$_}) : $defaults{$_};
     }
 
-    $app->renderer->add_helper(require_js => sub { 
+    $app->renderer->add_helper(
+        require_js => sub {
             $self->store_items('js', @_);
-    }); 
-    $app->renderer->add_helper(require_css => sub { 
+        }
+    );
+    $app->renderer->add_helper(
+        require_css => sub {
             $self->store_items('css', @_);
-    }); 
-    $app->renderer->add_helper(include_css => sub { 
-            $self->include_css(@_)
-    }); 
-    $app->renderer->add_helper(include_js => sub { 
-            $self->include_js(@_)
-    }); 
+        }
+    );
+    $app->renderer->add_helper(
+        include_css => sub {
+            $self->include_css(@_);
+        }
+    );
+    $app->renderer->add_helper(
+        include_js => sub {
+            $self->include_js(@_);
+        }
+    );
 
     $app->log->debug( "Plugin " . __PACKAGE__ . " registred!" );
 }
@@ -43,19 +51,23 @@ sub store_items {
 
     my $upd;
     my $store = $c->stash($stashkey) || {}; 
-    $store->{$target}{$_} = 1 for @items;
+    for (@items) {
+        next if exists $store->{'garage'}{$target}{$_};
+        $store->{'garage'}{$target}{$_} = 1 ;
+        push(@{$store->{'box'}{$target}}, $_);
+     }
     $c->stash($stashkey => $store);
-}
+} 
 
 sub include_js {
     my $self = shift;
     my $c = shift;
-    $self->store_items('js', @_) if @_;
+    $self->store_items('js', $c, @_) if @_;
     my $store = $c->stash($stashkey);
-    return '' unless $store->{'js'};
+    return '' unless $store->{'box'}{'js'};
     my @ct;
-    for (keys %{$store->{'js'}}) {
-        $c->stash('linked_item' => $self->{'js_base'} . '/' . $_);
+    for (@{$store->{'box'}{'js'}}) {
+        $c->stash('$linked_item' => $self->{'js_base'} . '/' . $_);
 
         push @ct,
           $c->render_partial(
@@ -65,16 +77,40 @@ sub include_js {
             template_class => __PACKAGE__
           );
     }
+    $c->stash('$linked_item', undef);
     return join '', @ct;
 }
+
+sub include_css {
+    my $self = shift;
+    my $c = shift;
+    $self->store_items('css', $c, @_) if @_;
+    my $store = $c->stash($stashkey);
+    return '' unless $store->{'box'}{'css'};
+    my @ct;
+    for (@{$store->{'box'}{'css'}}) {
+        $c->stash('$linked_item' => $self->{'css_base'} . '/' . $_);
+
+        push @ct,
+          $c->render_partial(
+            template => 'LinkedContent/css',
+            format   => 'html',
+            handler  => 'ep',
+            template_class => __PACKAGE__
+          );
+    }
+    $c->stash('$linked_item', undef);
+    return join '', @ct;
+}
+
 
 1;
 
 __DATA__
 @@ LinkedContent/js.html.ep
-<script src='<%== $linked_item %>'></script>
+<script src='<%== $self->stash('$linked_item') %>'></script>
 @@ LinkedContent/css.html.ep
-<link rel='stylesheet' type='text/css' media='screen' href='<%= $linked_item %>' /> 
+<link rel='stylesheet' type='text/css' media='screen' href='<%= $self->stash('$linked_item') %>' /> 
 __END__
 
 =head1 NAME
