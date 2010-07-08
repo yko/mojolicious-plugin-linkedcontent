@@ -14,6 +14,8 @@ my %defaults = (
     'css_base' => '/css',
 );
 
+our $reverse = 0;
+
 my $stashkey = '$linked_store';
 sub register {
     my ( $self, $app, $params) = @_;
@@ -51,10 +53,11 @@ sub store_items {
 
     my $upd;
     my $store = $c->stash($stashkey) || {}; 
-    for (@items) {
+    for ($reverse ? reverse(@items) : @items) {
         next if exists $store->{'garage'}{$target}{$_};
         $store->{'garage'}{$target}{$_} = 1 ;
-        push(@{$store->{'box'}{$target}}, $_);
+        if (!$reverse) { push(@{$store->{'box'}{$target}}, $_) }
+        else { unshift(@{$store->{'box'}{$target}}, $_) ; }
      }
     $c->stash($stashkey => $store);
 } 
@@ -62,6 +65,7 @@ sub store_items {
 sub include_js {
     my $self = shift;
     my $c = shift;
+    local $reverse = 1;
     $self->store_items('js', $c, @_) if @_;
     my $store = $c->stash($stashkey);
     return '' unless $store->{'box'}{'js'};
@@ -84,6 +88,7 @@ sub include_js {
 sub include_css {
     my $self = shift;
     my $c = shift;
+    local $reverse = 1;
     $self->store_items('css', $c, @_) if @_;
     my $store = $c->stash($stashkey);
     return '' unless $store->{'box'}{'css'};
