@@ -54,7 +54,11 @@ sub store_items {
     my $upd;
     my $store = $c->stash($stashkey) || {}; 
     for ($reverse ? reverse(@items) : @items) {
-        next if exists $store->{'garage'}{$target}{$_};
+        if (exists $store->{'garage'}{$target}{$_}) {
+            next unless $reverse;
+            my $x = $_;
+            @{$store->{'box'}{$target}} = grep $_ ne $x, @{$store->{'box'}{$target}};
+        }
         $store->{'garage'}{$target}{$_} = 1 ;
         if (!$reverse) { push(@{$store->{'box'}{$target}}, $_) }
         else { unshift(@{$store->{'box'}{$target}}, $_) ; }
