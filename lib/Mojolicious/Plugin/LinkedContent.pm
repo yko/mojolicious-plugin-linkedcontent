@@ -4,7 +4,7 @@ package Mojolicious::Plugin::LinkedContent;
 
 use warnings;
 use strict;
-use Carp;
+require Mojo::URL;
 
 use base 'Mojolicious::Plugin';
 
@@ -75,7 +75,9 @@ sub include_js {
     return '' unless $store->{'box'}{'js'};
     my @ct;
     for (@{$store->{'box'}{'js'}}) {
-        $c->stash('$linked_item' => $self->{'js_base'} . '/' . $_);
+        $c->stash('$linked_item' => Mojo::URL->new($_)->is_abs
+            ? $_
+            : $self->{'js_base'} . '/' . $_);
 
         push @ct,
           $c->render_partial(
@@ -98,7 +100,9 @@ sub include_css {
     return '' unless $store->{'box'}{'css'};
     my @ct;
     for (@{$store->{'box'}{'css'}}) {
-        $c->stash('$linked_item' => $self->{'css_base'} . '/' . $_);
+        $c->stash('$linked_item' => Mojo::URL->new($_)->is_abs
+            ? $_
+            : $self->{'css_base'} . '/' . $_);
 
         push @ct,
           $c->render_partial(
