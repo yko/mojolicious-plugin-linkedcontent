@@ -1,5 +1,5 @@
 # Copyright (C) 2010, Yaroslav Korshak.
- 
+
 package Mojolicious::Plugin::LinkedContent;
 
 use warnings;
@@ -8,7 +8,7 @@ require Mojo::URL;
 
 use base 'Mojolicious::Plugin';
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.02_1';
 my %defaults = (
     'js_base' => '/js',
     'css_base' => '/css',
@@ -21,7 +21,7 @@ sub register {
     my ( $self, $app, $params) = @_;
     for (qw/js_base css_base/) {
         $self->{$_} =
-          defined($params->{$_}) ? delete($params->{$_}) : $defaults{$_};
+        defined($params->{$_}) ? delete($params->{$_}) : $defaults{$_};
     }
 
     $app->renderer->add_helper(
@@ -62,9 +62,9 @@ sub store_items {
         $store->{'garage'}{$target}{$_} = 1 ;
         if (!$reverse) { push(@{$store->{'box'}{$target}}, $_) }
         else { unshift(@{$store->{'box'}{$target}}, $_) ; }
-     }
+    }
     $c->stash($stashkey => $store);
-} 
+}
 
 sub include_js {
     my $self = shift;
@@ -80,12 +80,12 @@ sub include_js {
             : $self->{'js_base'} . '/' . $_);
 
         push @ct,
-          $c->render_partial(
+        $c->render_partial(
             template => 'LinkedContent/js',
             format   => 'html',
             handler  => 'ep',
             template_class => __PACKAGE__
-          );
+        );
     }
     $c->stash('$linked_item', undef);
     return join '', @ct;
@@ -105,12 +105,12 @@ sub include_css {
             : $self->{'css_base'} . '/' . $_);
 
         push @ct,
-          $c->render_partial(
+        $c->render_partial(
             template => 'LinkedContent/css',
             format   => 'html',
             handler  => 'ep',
             template_class => __PACKAGE__
-          );
+        );
     }
     $c->stash('$linked_item', undef);
     return join '', @ct;
@@ -123,7 +123,7 @@ __DATA__
 @@ LinkedContent/js.html.ep
 <script src='<%== $self->stash('$linked_item') %>'></script>
 @@ LinkedContent/css.html.ep
-<link rel='stylesheet' type='text/css' media='screen' href='<%= $self->stash('$linked_item') %>' /> 
+<link rel='stylesheet' type='text/css' media='screen' href='<%= $self->stash('$linked_item') %>' />
 __END__
 
 =head1 NAME
@@ -142,7 +142,7 @@ Mojolicious::Plugin::LinkedContent - manage linked css and js
 Somewhere in template:
 
     % require_js 'myscript.js';
-    
+
 And in <HEAD> of your layout: 
 
     % include_js;
@@ -189,7 +189,7 @@ Internal method
 =back
 
 =head1 CONFIGURATION AND ENVIRONMENT
-  
+
 L<Mojolicious::Plugin::LinkedContent> can recieve parameters 
 when loaded from  L<Mojolicious> like this:
 

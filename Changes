@@ -1,9 +1,9 @@
 Revision history for mojolicious-plugin-linkedcontent
 
-0.0.1  Wed Jan 27 18:07:19 2010
-       Initial release.
+0.02_1  Sun Nov 28 14:24:12 2010
+        CSS support
+        Elements ordering fix
+        Support for absolute url
 
-0.0.2  Sun Nov 28 14:24:12 2010
-       CSS support
-       Elements ordering fix
-       Support for absolute url
+0.01_1  Wed Jan 27 18:07:19 2010
+        Initial release.
