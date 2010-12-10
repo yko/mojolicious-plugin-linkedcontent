@@ -10,7 +10,7 @@ my $lc = Mojolicious::Plugin::LinkedContent->new;
 isa_ok($lc => 'Mojolicious::Plugin::LinkedContent');
 
 my $app = Mojolicious->new;
-
+$app->log->level('error');
 $lc->register($app);
 
 isa_ok($app->renderer->helper->{require_js},  'CODE');
