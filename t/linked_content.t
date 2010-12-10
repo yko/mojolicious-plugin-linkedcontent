@@ -32,8 +32,7 @@ $result = $app->renderer->helper->{include_css}->($c);
 is $result, "<link rel='stylesheet' type='text/css' media='screen' href='/css/dummy.css' />\n";
 
 # Abs path
-TODO: {
-    local $TODO = "Abs path should ignore basedir";
+{
     $c = $app->controller_class->new(app => $app);
 
     $app->renderer->helper->{require_js}->($c, '/dummy.js');

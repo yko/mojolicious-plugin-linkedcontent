@@ -75,9 +75,8 @@ sub include_js {
     return '' unless $store->{'box'}{'js'};
     my @ct;
     for (@{$store->{'box'}{'js'}}) {
-        $c->stash('$linked_item' => Mojo::URL->new($_)->is_abs
-            ? $_
-            : $self->{'js_base'} . '/' . $_);
+
+        $c->stash('$linked_item' => $self->_prepend_path($_, 'js_base'));
 
         push @ct,
         $c->render_partial(
@@ -100,9 +99,8 @@ sub include_css {
     return '' unless $store->{'box'}{'css'};
     my @ct;
     for (@{$store->{'box'}{'css'}}) {
-        $c->stash('$linked_item' => Mojo::URL->new($_)->is_abs
-            ? $_
-            : $self->{'css_base'} . '/' . $_);
+
+        $c->stash('$linked_item' => $self->_prepend_path($_, 'css_base'));
 
         push @ct,
         $c->render_partial(
@@ -116,6 +114,27 @@ sub include_css {
     return join '', @ct;
 }
 
+sub _prepend_path {
+    my ($self, $path, $base) = @_;
+
+    my $url = Mojo::URL->new($path);
+    if ($url->is_abs || $url->path->leading_slash) {
+        # Absolute path or absolute url returned as is
+        return $path;
+    }
+
+    # Basepath not defined
+    return unless $self->{$base};
+
+    # Prepend path with base
+    my $basepath = Mojo::Path->new($self->{$base});
+    unshift @{$url->path->parts}, @{$basepath->parts};
+
+    # Inherit leading slash from basepath
+    $url->path->leading_slash($basepath->leading_slash);
+
+    return $url->to_string;
+}
 
 1;
 
