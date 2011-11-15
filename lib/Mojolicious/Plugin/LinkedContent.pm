@@ -8,7 +8,7 @@ require Mojo::URL;
 
 use base 'Mojolicious::Plugin';
 
-our $VERSION = '0.02_1';
+our $VERSION = '0.04';
 my %defaults = (
     'js_base' => '/js',
     'css_base' => '/css',
@@ -223,3 +223,10 @@ If no basedirs provided, '/js' and '/css' used by default
 =head1 AUTHOR
 
 Yaroslav Korshak  C<< <ykorshak@gmail.com> >>
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (C) 2010 - 2011, Yaroslav Korshak
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.

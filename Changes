@@ -1,9 +1,12 @@
 Revision history for mojolicious-plugin-linkedcontent
 
 
+0.04    Tue Nov 15 11:24:30 2011
+
 0.03_1  Thu Feb 10 14:52:06 2011
         Upgraded to Mojolicious 1.01
         Removed Module::Build suport
+
 0.02_1  Fri Dec 10 21:21:52 2010
         CSS support
         Elements ordering fix
