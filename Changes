@@ -1,7 +1,8 @@
 Revision history for mojolicious-plugin-linkedcontent
 
 
-0.04    Tue Nov 15 11:24:30 2011
+0.04    Tue Nov 15 11:27:26 2011
+        Switched to Module::Install
 
 0.03_1  Thu Feb 10 14:52:06 2011
         Upgraded to Mojolicious 1.01
