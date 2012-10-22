@@ -1,18 +1,26 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
 
-WriteMakefile(
-    NAME          => 'Mojolicious::Plugin::LinkedContent',
-    AUTHOR        => 'Yaroslav Korshak <yaroslav@korshak.name>',
-    VERSION_FROM  => 'lib/Mojolicious/Plugin/LinkedContent.pm',
-    ABSTRACT_FROM => 'lib/Mojolicious/Plugin/LinkedContent.pm',
-    PL_FILES      => {},
-    PREREQ_PM     => {
-        'Test::More'  => 0,
-        'version'     => 0,
-        'Mojolicious' => 1.01
-    },
-    dist => {COMPRESS => 'gzip -9f', SUFFIX => 'gz',},
-    clean => {FILES => 'mojolicious-plugin-linkedcontent-*'},
-);
+use inc::Module::Install;
+
+name 'Mojolicious-Plugin-LinkedContent';
+all_from 'lib/Mojolicious/Plugin/LinkedContent.pm';
+author q{Yaroslav Korshak <yko@cpan.org>};
+license 'perl';
+
+requires 'Mojolicious' => 1.01;
+build_requires 'Test::More';
+
+perl_version '5.010';
+
+resources
+  license => "http://dev.perl.org/licenses",
+  bugtracker =>
+  'https://github.com/yko/mojolicious-plugin-linkedcontent/issues',
+  repository => "https://github.com/yko/mojolicious-plugin-linkedcontent";
+
+auto_install;
+
+WriteAll;

@@ -12,7 +12,7 @@ isa_ok($lc => 'Mojolicious::Plugin::LinkedContent');
 my $app = Mojolicious->new;
 $app->log->level('error');
 $lc->register($app);
-my $helpers = $app->renderer->helpers;;
+my $helpers = $app->renderer->helpers;
 
 isa_ok($helpers->{require_js},  'CODE');
 isa_ok($helpers->{require_css}, 'CODE');
@@ -30,7 +30,8 @@ is $result, "<script src='/js/dummy.js'></script>\n";
 $helpers->{require_css}->($c, 'dummy.css');
 $result = $helpers->{include_css}->($c);
 
-is $result, "<link rel='stylesheet' type='text/css' media='screen' href='/css/dummy.css' />\n";
+is $result,
+  "<link rel='stylesheet' type='text/css' media='screen' href='/css/dummy.css' />\n";
 
 # Abs path
 {
@@ -49,16 +50,16 @@ is $result, "<link rel='stylesheet' type='text/css' media='screen' href='/css/du
 };
 
 # Abs url
-    $c = $app->controller_class->new(app => $app);
+$c = $app->controller_class->new(app => $app);
 
-    $helpers->{require_js}->($c, 'http://localhost/dummy.js');
-    $result = $helpers->{include_js}->($c);
+$helpers->{require_js}->($c, 'http://localhost/dummy.js');
+$result = $helpers->{include_js}->($c);
 
-    is $result, "<script src='http://localhost/dummy.js'></script>\n";
+is $result, "<script src='http://localhost/dummy.js'></script>\n";
 
-    $helpers->{require_css}->($c, 'http://localhost/dummy.css');
-    $result = $helpers->{include_css}->($c);
+$helpers->{require_css}->($c, 'http://localhost/dummy.css');
+$result = $helpers->{include_css}->($c);
 
-    is $result,
-      "<link rel='stylesheet' type='text/css' media='screen' href='http://localhost/dummy.css' />\n";
+is $result,
+  "<link rel='stylesheet' type='text/css' media='screen' href='http://localhost/dummy.css' />\n";
 

@@ -8,20 +8,22 @@ require Mojo::URL;
 
 use base 'Mojolicious::Plugin';
 
-our $VERSION = '0.02_1';
+our $VERSION = '0.04';
+
 my %defaults = (
-    'js_base' => '/js',
+    'js_base'  => '/js',
     'css_base' => '/css',
 );
 
 our $reverse = 0;
 
 my $stashkey = '$linked_store';
+
 sub register {
-    my ( $self, $app, $params) = @_;
+    my ($self, $app, $params) = @_;
     for (qw/js_base css_base/) {
         $self->{$_} =
-        defined($params->{$_}) ? delete($params->{$_}) : $defaults{$_};
+          defined($params->{$_}) ? delete($params->{$_}) : $defaults{$_};
     }
 
     $app->renderer->add_helper(
@@ -45,30 +47,31 @@ sub register {
         }
     );
 
-    $app->log->debug( "Plugin " . __PACKAGE__ . " registred!" );
+    $app->log->debug("Plugin " . __PACKAGE__ . " registred!");
 }
 
 sub store_items {
     my ($self, $target, $c, @items) = @_;
 
     my $upd;
-    my $store = $c->stash($stashkey) || {}; 
+    my $store = $c->stash($stashkey) || {};
     for ($reverse ? reverse(@items) : @items) {
         if (exists $store->{'garage'}{$target}{$_}) {
             next unless $reverse;
             my $x = $_;
-            @{$store->{'box'}{$target}} = grep $_ ne $x, @{$store->{'box'}{$target}};
+            @{$store->{'box'}{$target}} = grep $_ ne $x,
+              @{$store->{'box'}{$target}};
         }
-        $store->{'garage'}{$target}{$_} = 1 ;
+        $store->{'garage'}{$target}{$_} = 1;
         if (!$reverse) { push(@{$store->{'box'}{$target}}, $_) }
-        else { unshift(@{$store->{'box'}{$target}}, $_) ; }
+        else           { unshift(@{$store->{'box'}{$target}}, $_); }
     }
     $c->stash($stashkey => $store);
 }
 
 sub include_js {
     my $self = shift;
-    my $c = shift;
+    my $c    = shift;
     local $reverse = 1;
     $self->store_items('js', $c, @_) if @_;
     my $store = $c->stash($stashkey);
@@ -79,12 +82,12 @@ sub include_js {
         $c->stash('$linked_item' => $self->_prepend_path($_, 'js_base'));
 
         push @ct,
-        $c->render_partial(
-            template => 'LinkedContent/js',
-            format   => 'html',
-            handler  => 'ep',
+          $c->render_partial(
+            template       => 'LinkedContent/js',
+            format         => 'html',
+            handler        => 'ep',
             template_class => __PACKAGE__
-        );
+          );
     }
     $c->stash('$linked_item', undef);
     return join '', @ct;
@@ -92,7 +95,7 @@ sub include_js {
 
 sub include_css {
     my $self = shift;
-    my $c = shift;
+    my $c    = shift;
     local $reverse = 1;
     $self->store_items('css', $c, @_) if @_;
     my $store = $c->stash($stashkey);
@@ -103,12 +106,12 @@ sub include_css {
         $c->stash('$linked_item' => $self->_prepend_path($_, 'css_base'));
 
         push @ct,
-        $c->render_partial(
-            template => 'LinkedContent/css',
-            format   => 'html',
-            handler  => 'ep',
+          $c->render_partial(
+            template       => 'LinkedContent/css',
+            format         => 'html',
+            handler        => 'ep',
             template_class => __PACKAGE__
-        );
+          );
     }
     $c->stash('$linked_item', undef);
     return join '', @ct;
@@ -119,6 +122,7 @@ sub _prepend_path {
 
     my $url = Mojo::URL->new($path);
     if ($url->is_abs || $url->path->leading_slash) {
+
         # Absolute path or absolute url returned as is
         return $path;
     }
@@ -223,3 +227,10 @@ If no basedirs provided, '/js' and '/css' used by default
 =head1 AUTHOR
 
 Yaroslav Korshak  C<< <ykorshak@gmail.com> >>
+
+=head1 LICENCE AND COPYRIGHT
+
+Copyright (C) 2010 - 2011, Yaroslav Korshak
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself. See L<perlartistic>.
