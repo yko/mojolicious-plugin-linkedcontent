@@ -10,8 +10,8 @@ all_from 'lib/Mojolicious/Plugin/LinkedContent.pm';
 author q{Yaroslav Korshak <yko@cpan.org>};
 license 'perl';
 
-requires 'Mojolicious' => 1.01;
-build_requires 'Test::More';
+requires 'Mojolicious' => 3.01;
+test_requires 'Test::More';
 
 perl_version '5.010';
 
@@ -22,5 +22,7 @@ resources
   repository => "https://github.com/yko/mojolicious-plugin-linkedcontent";
 
 auto_install;
+
+author_tests "xt";
 
 WriteAll;
