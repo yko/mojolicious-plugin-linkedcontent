@@ -8,7 +8,7 @@ require Mojo::URL;
 
 use base 'Mojolicious::Plugin';
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 my %defaults = (
     'js_base'  => '/js',
