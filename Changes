@@ -1,5 +1,8 @@
 Revision history for mojolicious-plugin-linkedcontent
 
+0.07    Fri Jan 15 15:56:32 2015
+        Support Mojolicious 5.0+
+        Replaced render with render_to_string
 
 0.06    Wed Aug 14 22:37:01 2013
         Support Mojolicious 4.0+

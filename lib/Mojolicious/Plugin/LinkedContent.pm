@@ -8,7 +8,7 @@ require Mojo::URL;
 
 use base 'Mojolicious::Plugin';
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 my %defaults = (
     'js_base'  => '/js',
@@ -156,6 +156,9 @@ __DATA__
 @@ LinkedContent/css.html.ep
 <link rel='stylesheet' type='text/css' media='screen' href='<%= $self->stash('$linked_item') %>' />
 __END__
+
+=encoding utf8
+
 
 =head1 NAME
 

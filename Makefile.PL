@@ -10,7 +10,7 @@ all_from 'lib/Mojolicious/Plugin/LinkedContent.pm';
 author q{Yaroslav Korshak <yko@cpan.org>};
 license 'perl';
 
-requires 'Mojolicious' => 3.01;
+requires 'Mojolicious' => 5.0;
 test_requires 'Test::More';
 
 perl_version '5.010';
