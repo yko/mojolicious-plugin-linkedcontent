@@ -71,20 +71,17 @@ sub loaded_reg_items {
 
 	$s->{reg_items} = $cfg->{linkedcontent} if (exists $cfg->{linkedcontent});
 	$app->log->debug("Registry library loaded at " . $s->{reg_config});
-	$app->log->debug(Data::Dumper::Dumper($s->{reg_items}));
 }
 
 sub store_items_reg {
     my ($s, $c, @items) = @_;
 	foreach my $item (@items) {
-		$c->app->log->debug('Adding register scripts for key ' . $item);
 		if (exists $s->{reg_items}->{$item}) {
 			my $item_info = $s->{reg_items}->{$item};
 			if (exists $item_info->{deps}) {
 				$s->store_items_reg($c,@{$item_info->{deps}});
 			}
 			foreach (qw/js css/) {
-				$c->app->log->debug("Adding $_ for register scripts for key $item");
 				$s->store_items($_,$c,@{$item_info->{$_}}) 
 					if exists $item_info->{$_};
 			}
@@ -150,9 +147,21 @@ sub include_css {
     my @ct;
     for (@{$store->{'box'}{'css'}}) {
 
-		$_ .= '.css' unless (/\.css$/);
+		my $stash = {
+            '$linked_media' => 'screen'
+        };
+	
+        if (ref($_) eq 'HASH') {
+            $stash->{'$linked_item'} = $_->{href};
+            $stash->{'$linked_media'} = $_->{media} if (exists $_->{media});
+        } else {
+            $stash->{'$linked_item'} = $_;
+        }
 
-        $c->stash('$linked_item' => $self->_prepend_path($_, 'css_base'));
+        $stash->{'$linked_item'}  .= '.css' unless ($stash->{'$linked_item'} =~/\.css$/);
+        $stash->{'$linked_item'} = $self->_prepend_path($stash->{'$linked_item'}, 'css_base');
+
+        $c->stash($stash);
 
         push @ct, $c->render_to_string(
             template => 'LinkedContent/css',
@@ -198,7 +207,7 @@ __DATA__
 @@ LinkedContent/js.html.ep
 <script src='<%== $self->stash('$linked_item') %>'></script>
 @@ LinkedContent/css.html.ep
-<link rel='stylesheet' type='text/css' media='screen' href='<%= $self->stash('$linked_item') %>' />
+<link rel='stylesheet' type='text/css' media='<%= $self->stash('$linked_media') %>' href='<%= $self->stash('$linked_item') %>' />
 __END__
 
 =encoding utf8

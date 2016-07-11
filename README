@@ -79,6 +79,20 @@ my $cdn = '//cdnjs.cloudflare.com/ajax/libs';
                         ],
                         deps => ['jquery']
                     },
+	fullcalendar => {
+                        js => [
+                            "$cdn/fullcalendar/2.9.0/fullcalendar.min",
+                            "$cdn/fullcalendar/2.9.0/lang/it",
+                        ],
+                        css => [
+                            "$cdn/fullcalendar/2.9.0/fullcalendar",
+                            { 
+                                href => "$cdn/fullcalendar/2.9.0/fullcalendar.print",
+                                media => "print"
+                            }
+                        ],      
+                        deps => ['jquery']
+                    },
 }
 
 and use 
