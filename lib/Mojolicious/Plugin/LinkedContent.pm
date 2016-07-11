@@ -5,14 +5,16 @@ package Mojolicious::Plugin::LinkedContent;
 use warnings;
 use strict;
 require Mojo::URL;
+use Mojolicious::Plugin::JSONConfig;
 
 use base 'Mojolicious::Plugin';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 my %defaults = (
     'js_base'  => '/js',
     'css_base' => '/css',
+	'reg_config' => undef,
 );
 
 our $reverse = 0;
@@ -21,10 +23,12 @@ my $stashkey = '$linked_store';
 
 sub register {
     my ($self, $app, $params) = @_;
-    for (qw/js_base css_base/) {
+    for (qw/js_base css_base reg_config/) {
         $self->{$_} =
           defined($params->{$_}) ? delete($params->{$_}) : $defaults{$_};
     }
+
+	$self->loaded_reg_items($app);
 
     push @{$app->renderer->classes}, __PACKAGE__;
 
@@ -39,6 +43,11 @@ sub register {
         }
     );
     $app->renderer->add_helper(
+        require_reg => sub {
+            $self->store_items_reg(@_);
+        }
+    );
+    $app->renderer->add_helper(
         include_css => sub {
             $self->include_css(@_);
         }
@@ -50,6 +59,37 @@ sub register {
     );
 
     $app->log->debug("Plugin " . __PACKAGE__ . " registred!");
+}
+
+sub loaded_reg_items {
+	my $s	= shift;
+	my $app	= shift;
+	$s->{reg_items} = {};
+	return unless ($s->{reg_config});
+
+	my $cfg = $app->plugin('Config' => { file => $s->{reg_config}});
+
+	$s->{reg_items} = $cfg->{linkedcontent} if (exists $cfg->{linkedcontent});
+	$app->log->debug("Registry library loaded at " . $s->{reg_config});
+	$app->log->debug(Data::Dumper::Dumper($s->{reg_items}));
+}
+
+sub store_items_reg {
+    my ($s, $c, @items) = @_;
+	foreach my $item (@items) {
+		$c->app->log->debug('Adding register scripts for key ' . $item);
+		if (exists $s->{reg_items}->{$item}) {
+			my $item_info = $s->{reg_items}->{$item};
+			if (exists $item_info->{deps}) {
+				$s->store_items_reg($c,@{$item_info->{deps}});
+			}
+			foreach (qw/js css/) {
+				$c->app->log->debug("Adding $_ for register scripts for key $item");
+				$s->store_items($_,$c,@{$item_info->{$_}}) 
+					if exists $item_info->{$_};
+			}
+		}
+	}
 }
 
 sub store_items {
@@ -81,6 +121,8 @@ sub include_js {
     my @ct;
     for (@{$store->{'box'}{'js'}}) {
 
+		$_ .= '.js' unless (/\.js$/);
+
         $c->stash('$linked_item' => $self->_prepend_path($_, 'js_base'));
 
         push @ct, $c->render_to_string(
@@ -107,6 +149,8 @@ sub include_css {
     return '' unless $store->{'box'}{'css'};
     my @ct;
     for (@{$store->{'box'}{'css'}}) {
+
+		$_ .= '.css' unless (/\.css$/);
 
         $c->stash('$linked_item' => $self->_prepend_path($_, 'css_base'));
 
@@ -175,11 +219,13 @@ Mojolicious::Plugin::LinkedContent - manage linked css and js
 
 Somewhere in template:
 
+    % require_css 'mypage.css';
     % require_js 'myscript.js';
 
 And in <HEAD> of your layout: 
 
-    % include_js;
+    %== include_css;
+    %== include_js;
 
 
 =head1 DESCRIPTION

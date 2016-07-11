@@ -1,8 +1,9 @@
 mojolicious-plugin-linkedcontent
 
-This Mojolicious plugin provides four helpers: 
+This Mojolicious plugin provides five helpers: 
 
-        require_js
+        require_reg
+		require_js
         require_css
         include_js
         include_css
@@ -60,6 +61,33 @@ Using LinkedContent plugin you can easy define default set of css/js resources a
 from your templates (even included), actions, plugins, whatever else.
 
 Each resource will be included only once.
+
+You can also create a configuration file like this
+
+my $cdn = '//cdnjs.cloudflare.com/ajax/libs';
+{ linkedcontent => 
+{
+    jquery =>       {
+                        js => ["$cdn/jquery/2.2.4/jquery.min"]
+                    },
+    bootstrap =>    {   
+                        js => ["$cdn/twitter-bootstrap/3.3.6/js/bootstrap.min"],
+                        css => [
+                            "$cdn/twitter-bootstrap/3.3.6/css/bootstrap.min",
+                            "$cdn/twitter-bootstrap/3.3.6/css/bootstrap-theme.min",
+
+                        ],
+                        deps => ['jquery']
+                    },
+}
+
+and use 
+
+% require_reg 'bootstrap';
+
+to load, in one shoot, bootstrap javascript and css files and also jquery files automatically.
+
+You can create your own conf files with your preferred CDN, libraries and dependences.
 
 INSTALLATION
 
