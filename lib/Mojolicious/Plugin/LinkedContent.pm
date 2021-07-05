@@ -1,11 +1,13 @@
-# Copyright (C) 2010, Yaroslav Korshak.
+# Copyright (C) 2010, Yaroslav Korshak - 2021 Emiliano Bruni
 
 package Mojolicious::Plugin::LinkedContent;
 
 use warnings;
 use strict;
 require Mojo::URL;
-use Mojolicious::Plugin::JSONConfig;
+use Mojolicious::Plugin::Config;
+use LWP::Simple;
+use File::Temp;
 
 use base 'Mojolicious::Plugin';
 
@@ -14,7 +16,7 @@ our $VERSION = '0.08';
 my %defaults = (
     'js_base'  => '/js',
     'css_base' => '/css',
-	'reg_config' => undef,
+	'reg_config' => 'https://raw.githubusercontent.com/EmilianoBruni/MPLConfig/main/linked_content.cfg',
 );
 
 our $reverse = 0;
@@ -67,7 +69,19 @@ sub loaded_reg_items {
 	$s->{reg_items} = {};
 	return unless ($s->{reg_config});
 
-	my $cfg = $app->plugin('Config' => { file => $s->{reg_config}});
+    my $file = $s->{reg_config};
+
+    my $tmp;
+    if ($s->_is_remote($file)) {
+        # download
+        my $content = get($file);
+        $tmp = File::Temp->new(SUFFIX => '.cfg' );
+        print $tmp $content;
+        $file = $tmp->filename;
+        close($tmp);
+    }
+
+	my $cfg = $app->plugin('Config' => { file => $file });
 
 	$s->{reg_items} = $cfg->{linkedcontent} if (exists $cfg->{linkedcontent});
 	$app->log->debug("Registry library loaded at " . $s->{reg_config});
@@ -82,7 +96,7 @@ sub store_items_reg {
 				$s->store_items_reg($c,@{$item_info->{deps}});
 			}
 			foreach (qw/js css/) {
-				$s->store_items($_,$c,@{$item_info->{$_}}) 
+				$s->store_items($_,$c,@{$item_info->{$_}})
 					if exists $item_info->{$_};
 			}
 		}
@@ -150,7 +164,7 @@ sub include_css {
 		my $stash = {
             '$linked_media' => 'screen'
         };
-	
+
         if (ref($_) eq 'HASH') {
             $stash->{'$linked_item'} = $_->{href};
             $stash->{'$linked_media'} = $_->{media} if (exists $_->{media});
@@ -201,6 +215,11 @@ sub _prepend_path {
     return $url->to_string;
 }
 
+sub _is_remote  {
+    my ($s, $file) = (shift, shift);
+
+    return 1 if ($file =~ /^http/);
+}
 1;
 
 __DATA__
@@ -231,7 +250,7 @@ Somewhere in template:
     % require_css 'mypage.css';
     % require_js 'myscript.js';
 
-And in <HEAD> of your layout: 
+And in <HEAD> of your layout:
 
     %== include_css;
     %== include_js;
@@ -241,9 +260,9 @@ And in <HEAD> of your layout:
 
 Helps to manage scripts and styles included in document.
 
-=head1 INTERFACE 
+=head1 INTERFACE
 
-=head1 HELPERS 
+=head1 HELPERS
 
 =over
 
@@ -267,7 +286,7 @@ Render queue to template
 
 =back
 
-=head2 ITEMS 
+=head2 ITEMS
 
 =over
 
@@ -279,7 +298,7 @@ Internal method
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-L<Mojolicious::Plugin::LinkedContent> can recieve parameters 
+L<Mojolicious::Plugin::LinkedContent> can recieve parameters
 when loaded from  L<Mojolicious> like this:
 
     $self->plugin(
