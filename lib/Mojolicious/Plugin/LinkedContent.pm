@@ -249,6 +249,7 @@ Somewhere in template:
 
     % require_css 'mypage.css';
     % require_js 'myscript.js';
+    % require_reg 'bootstrap';
 
 And in <HEAD> of your layout:
 
@@ -273,6 +274,10 @@ Add one or more js files to load queue.
 =item require_css
 
 Add one or more css files to load queue.
+
+=item require_reg
+
+Add a library and its dependences based on reg_config file
 
 =item register
 
@@ -305,13 +310,17 @@ when loaded from  L<Mojolicious> like this:
         'linked_content',
         'js_base'  => '/jsdir',
         'css_base' => '/cssdir'
+        'reg_config' => '/linked_content.cfg',
     );
 
-If no basedirs provided, '/js' and '/css' used by default
+If no basedirs provided, '/js' and '/css' used by default.
+If no reg_config is provided a cloud example file is used.
+Default reg_config URL: https://raw.githubusercontent.com/EmilianoBruni/MPLConfig/main/linked_content.cfg
 
 =head1 AUTHOR
 
-Yaroslav Korshak  C<< <ykorshak@gmail.com> >>
+Yaroslav Korshak  C<< <ykorshak@gmail.com> >>,
+Emiliano Bruni C<< <info@ebruni.it >>
 
 =head1 CREDITS
 
@@ -324,6 +333,7 @@ Oliver Günther
 =head1 LICENCE AND COPYRIGHT
 
 Copyright (C) 2010 - 2013, Yaroslav Korshak
+Copyright (C) 2019 - 2021, Emiliano Bruni
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
