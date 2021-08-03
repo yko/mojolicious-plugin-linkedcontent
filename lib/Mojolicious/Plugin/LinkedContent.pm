@@ -81,7 +81,7 @@ sub loaded_reg_items {
         close($tmp);
     }
 
-	my $cfg = $app->plugin('Config' => { file => $file });
+	my $cfg = new Mojolicious::Plugin::Config->new->load($file);
 
 	$s->{reg_items} = $cfg->{linkedcontent} if (exists $cfg->{linkedcontent});
 	$app->log->debug("Registry library loaded at " . $s->{reg_config});
