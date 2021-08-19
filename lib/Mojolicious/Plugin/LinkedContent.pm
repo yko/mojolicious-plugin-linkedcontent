@@ -1,18 +1,22 @@
-# Copyright (C) 2010, Yaroslav Korshak.
+# Copyright (C) 2010, Yaroslav Korshak - 2021 Emiliano Bruni
 
 package Mojolicious::Plugin::LinkedContent;
 
 use warnings;
 use strict;
 require Mojo::URL;
+use Mojolicious::Plugin::Config;
+use LWP::Simple;
+use File::Temp;
 
 use base 'Mojolicious::Plugin';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 my %defaults = (
     'js_base'  => '/js',
     'css_base' => '/css',
+	'reg_config' => 'https://raw.githubusercontent.com/EmilianoBruni/MPLConfig/main/linked_content.cfg',
 );
 
 our $reverse = 0;
@@ -21,10 +25,12 @@ my $stashkey = '$linked_store';
 
 sub register {
     my ($self, $app, $params) = @_;
-    for (qw/js_base css_base/) {
+    for (qw/js_base css_base reg_config/) {
         $self->{$_} =
           defined($params->{$_}) ? delete($params->{$_}) : $defaults{$_};
     }
+
+	$self->loaded_reg_items($app);
 
     push @{$app->renderer->classes}, __PACKAGE__;
 
@@ -39,6 +45,11 @@ sub register {
         }
     );
     $app->renderer->add_helper(
+        require_reg => sub {
+            $self->store_items_reg(@_);
+        }
+    );
+    $app->renderer->add_helper(
         include_css => sub {
             $self->include_css(@_);
         }
@@ -50,6 +61,46 @@ sub register {
     );
 
     $app->log->debug("Plugin " . __PACKAGE__ . " registred!");
+}
+
+sub loaded_reg_items {
+	my $s	= shift;
+	my $app	= shift;
+	$s->{reg_items} = {};
+	return unless ($s->{reg_config});
+
+    my $file = $s->{reg_config};
+
+    my $tmp;
+    if ($s->_is_remote($file)) {
+        # download
+        my $content = get($file);
+        $tmp = File::Temp->new(SUFFIX => '.cfg' );
+        print $tmp $content;
+        $file = $tmp->filename;
+        close($tmp);
+    }
+
+	my $cfg = new Mojolicious::Plugin::Config->new->load($file);
+
+	$s->{reg_items} = $cfg->{linkedcontent} if (exists $cfg->{linkedcontent});
+	$app->log->debug("Registry library loaded at " . $s->{reg_config});
+}
+
+sub store_items_reg {
+    my ($s, $c, @items) = @_;
+	foreach my $item (@items) {
+		if (exists $s->{reg_items}->{$item}) {
+			my $item_info = $s->{reg_items}->{$item};
+			if (exists $item_info->{deps}) {
+				$s->store_items_reg($c,@{$item_info->{deps}});
+			}
+			foreach (qw/js css/) {
+				$s->store_items($_,$c,@{$item_info->{$_}})
+					if exists $item_info->{$_};
+			}
+		}
+	}
 }
 
 sub store_items {
@@ -81,6 +132,8 @@ sub include_js {
     my @ct;
     for (@{$store->{'box'}{'js'}}) {
 
+		$_ .= '.js' unless (/\.js$/);
+
         $c->stash('$linked_item' => $self->_prepend_path($_, 'js_base'));
 
         push @ct, $c->render_to_string(
@@ -108,7 +161,21 @@ sub include_css {
     my @ct;
     for (@{$store->{'box'}{'css'}}) {
 
-        $c->stash('$linked_item' => $self->_prepend_path($_, 'css_base'));
+		my $stash = {
+            '$linked_media' => 'screen'
+        };
+
+        if (ref($_) eq 'HASH') {
+            $stash->{'$linked_item'} = $_->{href};
+            $stash->{'$linked_media'} = $_->{media} if (exists $_->{media});
+        } else {
+            $stash->{'$linked_item'} = $_;
+        }
+
+        $stash->{'$linked_item'}  .= '.css' unless ($stash->{'$linked_item'} =~/\.css$/);
+        $stash->{'$linked_item'} = $self->_prepend_path($stash->{'$linked_item'}, 'css_base');
+
+        $c->stash($stash);
 
         push @ct, $c->render_to_string(
             template => 'LinkedContent/css',
@@ -148,13 +215,18 @@ sub _prepend_path {
     return $url->to_string;
 }
 
+sub _is_remote  {
+    my ($s, $file) = (shift, shift);
+
+    return 1 if ($file =~ /^http/);
+}
 1;
 
 __DATA__
 @@ LinkedContent/js.html.ep
 <script src='<%== $self->stash('$linked_item') %>'></script>
 @@ LinkedContent/css.html.ep
-<link rel='stylesheet' type='text/css' media='screen' href='<%= $self->stash('$linked_item') %>' />
+<link rel='stylesheet' type='text/css' media='<%= $self->stash('$linked_media') %>' href='<%= $self->stash('$linked_item') %>' />
 __END__
 
 =encoding utf8
@@ -175,20 +247,23 @@ Mojolicious::Plugin::LinkedContent - manage linked css and js
 
 Somewhere in template:
 
+    % require_css 'mypage.css';
     % require_js 'myscript.js';
+    % require_reg 'bootstrap';
 
-And in <HEAD> of your layout: 
+And in <HEAD> of your layout:
 
-    % include_js;
+    %== include_css;
+    %== include_js;
 
 
 =head1 DESCRIPTION
 
 Helps to manage scripts and styles included in document.
 
-=head1 INTERFACE 
+=head1 INTERFACE
 
-=head1 HELPERS 
+=head1 HELPERS
 
 =over
 
@@ -199,6 +274,10 @@ Add one or more js files to load queue.
 =item require_css
 
 Add one or more css files to load queue.
+
+=item require_reg
+
+Add a library and its dependences based on reg_config file
 
 =item register
 
@@ -212,7 +291,7 @@ Render queue to template
 
 =back
 
-=head2 ITEMS 
+=head2 ITEMS
 
 =over
 
@@ -224,20 +303,24 @@ Internal method
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-L<Mojolicious::Plugin::LinkedContent> can recieve parameters 
+L<Mojolicious::Plugin::LinkedContent> can recieve parameters
 when loaded from  L<Mojolicious> like this:
 
     $self->plugin(
         'linked_content',
         'js_base'  => '/jsdir',
         'css_base' => '/cssdir'
+        'reg_config' => '/linked_content.cfg',
     );
 
-If no basedirs provided, '/js' and '/css' used by default
+If no basedirs provided, '/js' and '/css' used by default.
+If no reg_config is provided a cloud example file is used.
+Default reg_config URL: https://raw.githubusercontent.com/EmilianoBruni/MPLConfig/main/linked_content.cfg
 
 =head1 AUTHOR
 
-Yaroslav Korshak  C<< <ykorshak@gmail.com> >>
+Yaroslav Korshak  C<< <ykorshak@gmail.com> >>,
+Emiliano Bruni C<< <info@ebruni.it >>
 
 =head1 CREDITS
 
@@ -250,6 +333,7 @@ Oliver Günther
 =head1 LICENCE AND COPYRIGHT
 
 Copyright (C) 2010 - 2013, Yaroslav Korshak
+Copyright (C) 2019 - 2021, Emiliano Bruni
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.

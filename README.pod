@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#INTERFACE">INTERFACE</a></li>
+  <li><a href="#HELPERS">HELPERS</a>
+    <ul>
+      <li><a href="#ITEMS">ITEMS</a></li>
+    </ul>
+  </li>
+  <li><a href="#CONFIGURATION-AND-ENVIRONMENT">CONFIGURATION AND ENVIRONMENT</a></li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+  <li><a href="#CREDITS">CREDITS</a></li>
+  <li><a href="#LICENCE-AND-COPYRIGHT">LICENCE AND COPYRIGHT</a></li>
+</ul>
+
+<h1 id="NAME">NAME</h1>
+
+<p>Mojolicious::Plugin::LinkedContent - manage linked css and js</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<pre><code>    use base &#39;Mojolicious&#39;;
+    sub statup {
+        my $self = shift;
+        $self-&gt;plugin( &#39;linked_content&#39; );
+    }</code></pre>
+
+<p>Somewhere in template:</p>
+
+<pre><code>    % require_css &#39;mypage.css&#39;;
+    % require_js &#39;myscript.js&#39;;
+    % require_reg &#39;bootstrap&#39;;</code></pre>
+
+<p>And in &lt;HEAD&gt; of your layout:</p>
+
+<pre><code>    %== include_css;
+    %== include_js;</code></pre>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p>Helps to manage scripts and styles included in document.</p>
+
+<h1 id="INTERFACE">INTERFACE</h1>
+
+<h1 id="HELPERS">HELPERS</h1>
+
+<dl>
+
+<dt id="require_js">require_js</dt>
+<dd>
+
+<p>Add one or more js files to load queue.</p>
+
+</dd>
+<dt id="require_css">require_css</dt>
+<dd>
+
+<p>Add one or more css files to load queue.</p>
+
+</dd>
+<dt id="require_reg">require_reg</dt>
+<dd>
+
+<p>Add a library and its dependences based on reg_config file</p>
+
+</dd>
+<dt id="register">register</dt>
+<dd>
+
+<p>Render the plugin. Internal</p>
+
+</dd>
+<dt id="include_js-item-include_css">include_js =item include_css</dt>
+<dd>
+
+<p>Render queue to template</p>
+
+</dd>
+</dl>
+
+<h2 id="ITEMS">ITEMS</h2>
+
+<dl>
+
+<dt id="store_items">store_items</dt>
+<dd>
+
+<p>Internal method</p>
+
+</dd>
+</dl>
+
+<h1 id="CONFIGURATION-AND-ENVIRONMENT">CONFIGURATION AND ENVIRONMENT</h1>
+
+<p><a>Mojolicious::Plugin::LinkedContent</a> can recieve parameters when loaded from <a>Mojolicious</a> like this:</p>
+
+<pre><code>    $self-&gt;plugin(
+        &#39;linked_content&#39;,
+        &#39;js_base&#39;  =&gt; &#39;/jsdir&#39;,
+        &#39;css_base&#39; =&gt; &#39;/cssdir&#39;
+        &#39;reg_config&#39; =&gt; &#39;/linked_content.cfg&#39;,
+    );</code></pre>
+
+<p>If no basedirs provided, &#39;/js&#39; and &#39;/css&#39; used by default. If no reg_config is provided a cloud example file is used. Default reg_config URL: https://raw.githubusercontent.com/EmilianoBruni/MPLConfig/main/linked_content.cfg</p>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p>Yaroslav Korshak <code>&lt;ykorshak@gmail.com&gt;</code>, Emiliano Bruni <code>&lt;info@ebruni.it</code></p>
+
+<h1 id="CREDITS">CREDITS</h1>
+
+<ul>
+
+<p>Oliver G&uuml;nther</p>
+
+</ul>
+
+<h1 id="LICENCE-AND-COPYRIGHT">LICENCE AND COPYRIGHT</h1>
+
+<p>Copyright (C) 2010 - 2013, Yaroslav Korshak Copyright (C) 2019 - 2021, Emiliano Bruni</p>
+
+<p>This module is free software; you can redistribute it and/or modify it under the same terms as Perl itself. See <a>perlartistic</a>.</p>
+
+
+</body>
+
+</html>
+
+
